@@ -48,6 +48,6 @@ int main(int argc, char* argv[]) {
 	printf("\n-------[ STRIDE - Set ticket by SVT ]-------\n");
 	STRIDE(pc);
 
-	printf("\n¢º Simulation finished.\n");
+	printf("\n >> Simulation finished.\n");
 	return 0;
 }
