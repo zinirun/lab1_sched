@@ -21,8 +21,8 @@ TARGET_LAB1 = lab1_sched
 .SUFFIXES : .c .o
 
 .c.o:
-	@echo "Compilingi lab1 scheduler simulator $< ..."
-	$(CC) -c $(CFLAGS) -o $@ $<
+	@echo "Compiling lab1 scheduler simulator $< ..."
+	$(CC) -c $(CFLAGS) -o $@ $< -lm
 
 $(TARGET_LAB1) : $(OBJS_LAB1)
 	$(CC) -o $(TARGET_LAB1) $(OBJS_LAB1)
