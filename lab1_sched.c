@@ -24,7 +24,6 @@
 #include <assert.h>
 #include <pthread.h>
 #include <asm/unistd.h>
-#include <math.h>
 #include "lab1_sched_types.h"
 
 int process_cnt;
@@ -298,6 +297,7 @@ void MLFQ(PROCESS pc[], int MLFQ_cnt) {
 	int time;
 	int end_flag = 0;
 	int continue_flag = 0;
+	int pow_val;
 
 	//create result array
 	int** arr = (int**)malloc(sizeof(int*) * height);
@@ -309,11 +309,16 @@ void MLFQ(PROCESS pc[], int MLFQ_cnt) {
 
 	PROC_QUEUE* linked_Q = (PROC_QUEUE*)malloc(sizeof(PROC_QUEUE) * MLFQ_cnt); // create linked queue
 
-	//if q_index is over 2 -> TQ is 2^i
+	//if q_index is over 1 -> TQ is 2^i
 	for (q_index = 0; q_index < MLFQ_cnt; q_index++) {
+		pow_val = 1;
 		linked_Q[q_index].head = 0;
 		linked_Q[q_index].tail = 0;
-		linked_Q[q_index].TQ = pow(2, q_index);
+		linked_Q[q_index].TQ = 1;
+		for(j=0; j<q_index; j++){ //is same with pow(2, q_index);
+			pow_val *= 2;
+		}
+		linked_Q[q_index].TQ = pow_val;
 		linked_Q[q_index].Q = (PROCESS*)malloc(sizeof(PROCESS) * MAX_Q);
 		for (i = 0; i < MAX_Q; i++)	processRefresh(linked_Q[q_index].Q, i);
 	}

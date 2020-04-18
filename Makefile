@@ -22,7 +22,7 @@ TARGET_LAB1 = lab1_sched
 
 .c.o:
 	@echo "Compiling lab1 scheduler simulator $< ..."
-	$(CC) -c $(CFLAGS) -o $@ $< -lm
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(TARGET_LAB1) : $(OBJS_LAB1)
 	$(CC) -o $(TARGET_LAB1) $(OBJS_LAB1)
