@@ -29,16 +29,13 @@ typedef struct Process {
 	int stride;
 	int runStride;
 	int state;
-	int rec;
-	int first_runT;
-	int final_endT;
 } PROCESS;
 
 typedef struct ProcQueue {
 	int head;
 	int tail;
 	int TQ; // Time quantum
-	PROCESS *Q;
+	PROCESS* Q;
 } PROC_QUEUE;
 
 /// General functions

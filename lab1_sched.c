@@ -5,9 +5,8 @@
 *        Student name : Heo Jeon Jin, Shin Chang Woo
 *
 *   lab1_sched.c :
-
 *       - Lab1 source file.
-*       - Must contains scueduler algorithm function'definition.
+*       - Must contains scheduler algorithm function's definition.
 *
 */
 ///////Linux header//////////
@@ -29,10 +28,11 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <math.h>
-#include "lab1_sched_types.h"
+#include "./include/lab1_sched_types.h"
 
 int process_cnt;
 
+//Set process by user (arrival time, service time)
 void setProcess(PROCESS* pointer) {
 	printf("\n¢º How many process (1 to 50) -> ");
 	scanf("%d", &process_cnt);
@@ -52,6 +52,7 @@ void setProcess(PROCESS* pointer) {
 	free(pc);
 }
 
+//Get sum of process' service time
 int getSumST(PROCESS pc[]) {
 	int i = 0;
 	int j = 0;
@@ -63,7 +64,7 @@ int getSumST(PROCESS pc[]) {
 
 	for (i = 0; i < process_cnt; i++) tmp_pc[i] = pc[i];
 
-	// Sort process array by process arrival time
+	//Sort processes by arrival time
 	for (i = 0; i < process_cnt; i++) {
 		for (j = i; j < process_cnt; j++) {
 			if (tmp_pc[i].arriveT > tmp_pc[j].arriveT) {
@@ -73,7 +74,8 @@ int getSumST(PROCESS pc[]) {
 			}
 		}
 	}
-	// Calculate total scheduling time   
+
+	//Add to sumT for each process' service time
 	sumT = tmp_pc[0].arriveT;
 	for (i = 0; i < process_cnt - 1; i++) {
 		sumT += tmp_pc[i].serviceT;
@@ -83,10 +85,12 @@ int getSumST(PROCESS pc[]) {
 
 	sumT += tmp_pc[process_cnt - 1].serviceT;
 
+	//free malloc memory
 	free(tmp_pc);
 	return sumT;
 }
 
+//Get count of parameter queue
 int getQueueSize(PROC_QUEUE* queue) {
 	PROCESS* pointer = queue->Q;
 	int cnt = 0;
@@ -97,6 +101,7 @@ int getQueueSize(PROC_QUEUE* queue) {
 	return cnt;
 }
 
+//Flush process by index
 void processRefresh(PROCESS* proc, int index) {
 	proc[index].pid = -1;
 	proc[index].arriveT = 0;
@@ -104,11 +109,9 @@ void processRefresh(PROCESS* proc, int index) {
 	proc[index].name = ' ';
 	proc[index].runT = 0;
 	proc[index].state = READY;
-	proc[index].rec = 0;
-	proc[index].first_runT = 0;
-	proc[index].final_endT = 0;
 }
 
+//show scheduled graph by parameter array (width: total service time, height: process' count
 void draw(int** arr, PROCESS pc[]) {
 	int i = 0;
 	int k = 0;
@@ -124,12 +127,13 @@ void draw(int** arr, PROCESS pc[]) {
 	}
 }
 
+//push process to queue's tail
 void insertQueue(PROCESS proc, PROC_QUEUE* queue) {
 	int head = queue->head;
 	int tail = queue->tail;
 
 	if ((tail + 1) % MAX_Q == head) {
-		printf("ERROR :: Queue is full\n"); return; // exception for queue full
+		printf("ERROR :: Queue is full\n"); return; //error exception (if queue is full)
 	}
 
 	proc.runT = 0;
@@ -137,57 +141,54 @@ void insertQueue(PROCESS proc, PROC_QUEUE* queue) {
 	queue->tail = (tail + 1) % MAX_Q;
 }
 
+//Do FIFO scheduling
 void FIFO(PROCESS pc[]) {
 	int i = 0;
 	int j = 0;
 	int time = 0;
 	int height = process_cnt;
 	int width = getSumST(pc);
-	PROC_QUEUE Q_single = { 0, };
+	PROC_QUEUE Q_single = { 0, }; //FIFO uses one queue
 
-	// Create result array
+	//create result array
 	int** arr = (int**)malloc(sizeof(int*) * height);
 	for (i = 0; i < height; i++) {
 		arr[i] = (int*)malloc(sizeof(int) * width);
 	}
 
-	// Create queue
+	//Init queue
 	PROCESS* queue = (PROCESS*)malloc(sizeof(PROCESS) * MAX_Q);
 	Q_single.head = 0;
 	Q_single.tail = 0;
 	Q_single.Q = queue;
 
-	// Prevent memory leaking error
+	//Protect error of memory leaked
 	for (i = 0; i < MAX_Q; i++) processRefresh(queue, i);
 
-	// Initiate result array 
+	//Init result array 
 	for (i = 0; i < height; i++) for (j = 0; j < width; j++) arr[i][j] = 0;
 
-	// Initiate process info before simulation
-	for (i = 0; i < process_cnt; i++) {
-		pc[i].state = READY;
-		pc[i].rec = 0;
-		pc[i].first_runT = 0;
-		pc[i].final_endT = 0;
-	}
+	//Init process before sched
+	for (i = 0; i < process_cnt; i++) pc[i].state = READY;
 
-	// Time - based simulation start 
+	//Doing simulation
 	for (; time < getSumST(pc); time++) {
 		for (i = 0; i < process_cnt; i++) {
-			if (pc[i].state == READY && pc[i].arriveT <= time) { // Check for process arrival
+			if (pc[i].state == READY && pc[i].arriveT <= time) { //only insert by process arrival which is READY state
 				insertQueue(pc[i], &Q_single);
 				pc[i].state = RUN;
 			}
 		}
-		if (getQueueSize(&Q_single)) FIFO_pop(&Q_single, pc, time, arr); //Pop only if there's at least one process
+		if (getQueueSize(&Q_single)) FIFO_pop(&Q_single, pc, time, arr); //only pop when there is over one process
 	}
 
-	draw(arr, pc); // Print out result
+	draw(arr, pc);
 
 	for (i = 0; i < height; i++) free(arr[i]);
 	free(queue);
 }
 
+//pop fifo's queue by param of singleQ pointer
 void FIFO_pop(PROC_QUEUE* SQ_pointer, PROCESS* pc, int time, int** arr) {
 	int i = 0;
 	int head = SQ_pointer->head;
@@ -196,63 +197,47 @@ void FIFO_pop(PROC_QUEUE* SQ_pointer, PROCESS* pc, int time, int** arr) {
 	PROCESS* queue_pointer = SQ_pointer->Q;
 	int pid = queue_pointer[head].pid;
 
-	queue_pointer[head].serviceT--; // Run
-	if (queue_pointer[head].serviceT == 0){ // Process end
-		pc[pid].final_endT = time + 1;
+	queue_pointer[head].serviceT--; //reduce service time which is running
+	if (queue_pointer[head].serviceT == 0) { //Process end
 		arr[pid][time] = 1;
 		processRefresh(queue_pointer, head);
 		SQ_pointer->head = (head + 1) % MAX_Q;
 	}
-	if (pc[pid].rec == 0){ // Record arrival time
-		pc[pid].first_runT = time;
-		pc[pid].rec = 1;
-	}
 	arr[pid][time] = 1;
 }
 
+//Do RR scheduling
 void RR(PROCESS pc[], int tq)
 {
 	int height = process_cnt;
 	int width = getSumST(pc);
-	int i = 0;
-	int j = 0;
-	int time = 0;
+	int i;
+	int j;
+	int time;
 	int insert_flag = 0;
 
-	// Create result array
+	//create result array
 	int** arr = (int**)malloc(sizeof(int*) * height);
-	for (i; i < height; i++) arr[i] = (int*)malloc(sizeof(int) * width);
+	for (i = 0; i < height; i++) arr[i] = (int*)malloc(sizeof(int) * width);
 
 	for (i = 0; i < height; i++) for (j = 0; j < width; j++) arr[i][j] = 0;
 
-	for (i = 0; i < process_cnt; i++)
-	{
-		pc[i].state = READY;
-		pc[i].rec = 0;
-		pc[i].first_runT = 0;
-		pc[i].final_endT = 0;
-	}
+	for (i = 0; i < process_cnt; i++) pc[i].state = READY;
 
-	PROC_QUEUE Q_single = { 0, };
+	PROC_QUEUE Q_single = { 0, }; //RR uses one queue
 	PROCESS* queue = (PROCESS*)malloc(sizeof(PROCESS) * MAX_Q);
 	Q_single.head = 0;
 	Q_single.tail = 0;
 	Q_single.Q = queue;
 	Q_single.TQ = tq;
-	
-	// Prevent memory leaking error
+
 	for (i = 0; i < MAX_Q; i++) processRefresh(queue, i);
 
-	// Time - based simulation start
-	for (; time < getSumST(pc); time++) {
+	//Doing simulation
+	for (time = 0; time < getSumST(pc); time++) {
 		for (j = 0; j < process_cnt; j++) {
-			if (pc[j].arriveT == time){ // Check for process arrival
-				if (insert_flag){
-					// Do nothing
-				}
-				else{
-					insertQueue(pc[j], &Q_single);
-				}
+			if (pc[j].arriveT == time) { //check by process arrival time
+				if(!insert_flag) insertQueue(pc[j], &Q_single);
 			}
 		}
 		insert_flag = 0;
@@ -266,6 +251,7 @@ void RR(PROCESS pc[], int tq)
 	free(queue);
 }
 
+//pop rr's queue by param of singleQ pointer
 void RR_pop(PROC_QUEUE* SQ_pointer, PROCESS pc[], int time, int** arr, int* flag) {
 	int i = 0;
 	int head = SQ_pointer->head;
@@ -275,28 +261,23 @@ void RR_pop(PROC_QUEUE* SQ_pointer, PROCESS pc[], int time, int** arr, int* flag
 	int pid = queue_pointer[head].pid;
 	int _runT = queue_pointer[head].runT;
 
-	if (head == tail) printf("ERROR :: Queue is empty");
+	if (head == tail) printf("ERROR :: Queue is empty"); //error exception for empty queue
 
-	queue_pointer[head].serviceT--; // Run
+	queue_pointer[head].serviceT--; //if process run - reduce svt, plus runT
 	queue_pointer[head].runT++;
 
-	if (queue_pointer[head].serviceT == 0) { // Process end
-		pc[pid].final_endT = time + 1;
+	if (queue_pointer[head].serviceT == 0) { //process end
 		arr[pid][time] = 1;
 		processRefresh(queue_pointer, head);
 		SQ_pointer->head = (head + 1) % MAX_Q;
 	}
 	else {
-		if (pc[pid].rec == 0) { // Record arrival time
-			pc[pid].first_runT = time;
-			pc[pid].rec = 1;
-		}
-		if (_runT < tq - 1) { // Enough time quantum
+		if (_runT < tq - 1) { //if time quantum is enough
 			arr[pid][time] = 1;
 			return;
 		}
-		for (; i < process_cnt; i++) {// Pre-check process arrival 
-			if (pc[i].arriveT == time + 1) {
+		for (; i < process_cnt; i++) {
+			if (pc[i].arriveT == time + 1) { //check by arrival time
 				insertQueue(pc[i], SQ_pointer);
 				*flag = 1;
 			}
@@ -308,9 +289,8 @@ void RR_pop(PROC_QUEUE* SQ_pointer, PROCESS pc[], int time, int** arr, int* flag
 	}
 }
 
-
-void MLFQ(PROCESS pc[], int MLFQ_cnt)
-{
+//Do MLFQ scheduling
+void MLFQ(PROCESS pc[], int MLFQ_cnt) {
 	int height = process_cnt;
 	int width = getSumST(pc);
 	int i = 0;
@@ -318,50 +298,47 @@ void MLFQ(PROCESS pc[], int MLFQ_cnt)
 	int q_cnt = 0;
 	int q_index;
 	int proc_index;
-	int time = 0;
+	int time;
 	int end_flag = 0;
 	int continue_flag = 0;
 
-	// Create result array
+	//create result array
 	int** arr = (int**)malloc(sizeof(int*) * height);
 	for (i; i < height; i++) arr[i] = (int*)malloc(sizeof(int) * width);
 	for (i = 0; i < height; i++) for (j = 0; j < width; j++) arr[i][j] = 0;
 	for (i = 0; i < process_cnt; i++) {
 		pc[i].state = READY;
-		pc[i].rec = 0;
-		pc[i].first_runT = 0;
-		pc[i].final_endT = 0;
 	}
 
 	PROC_QUEUE* linked_Q = (PROC_QUEUE*)malloc(sizeof(PROC_QUEUE) * MLFQ_cnt); // create linked queue
 
+	//if q_index is over 2 -> TQ is 2^i
 	for (q_index = 0; q_index < MLFQ_cnt; q_index++) {
 		linked_Q[q_index].head = 0;
 		linked_Q[q_index].tail = 0;
 		linked_Q[q_index].TQ = pow(2, q_index);
 		linked_Q[q_index].Q = (PROCESS*)malloc(sizeof(PROCESS) * MAX_Q);
-		// prevent memory leaking error
 		for (i = 0; i < MAX_Q; i++)	processRefresh(linked_Q[q_index].Q, i);
 	}
 
-	// Time - based simulation start
-	for (; time < width; time++) {
+	//Doing simulation
+	for (time = 0; time < width; time++) {
 		continue_flag = 0;
 		end_flag = 0;
 		for (j = 0; j < process_cnt; j++) {
-			if ((pc[j].state == READY) && (pc[j].arriveT <= time)) { // Check for process arrival
+			if ((pc[j].state == READY) && (pc[j].arriveT <= time)) { //check by arrival time
 				pc[j].state = RUN;
 				insertQueue(pc[j], &linked_Q[0]);
 			}
 		}
-		for (q_index = 0; q_index < MLFQ_cnt; q_index++) { // Pop top priority process from the queue
+		for (q_index = 0; q_index < MLFQ_cnt; q_index++) { //pop which is TOP priority process in queue
 			for (proc_index = 0; proc_index < getQueueSize(&linked_Q[q_index]); ) {
-				continue_flag = MLFQ_pop(linked_Q, pc, q_index, time, arr, MLFQ_cnt); // Pop process and determine whether continue or break
+				continue_flag = MLFQ_pop(linked_Q, pc, q_index, time, arr, MLFQ_cnt); //set which is continue or break
 
-				if (continue_flag == 1) { // Continue process
+				if (continue_flag == 1) { //if continue
 					time++;
-					for (j = 0; j < process_cnt; j++) { // Must check arrival of new process while running a job
-						if ((pc[j].state == READY) && (pc[j].arriveT <= time)) { // Check for process arrival
+					for (j = 0; j < process_cnt; j++) { //check new process' arrived while running sched
+						if ((pc[j].state == READY) && (pc[j].arriveT <= time)) { //check by process arrival
 							pc[j].state = RUN;
 							insertQueue(pc[j], &linked_Q[0]);
 						}
@@ -370,10 +347,10 @@ void MLFQ(PROCESS pc[], int MLFQ_cnt)
 				}
 				else {
 					end_flag = 1;
-					break; // Once the process has popped, then exit the loop.
+					break; //If process - pop -> break in loop.
 				}
 			}
-			if (end_flag)
+			if (end_flag) //check process end
 				break;
 		}
 	}
@@ -384,6 +361,7 @@ void MLFQ(PROCESS pc[], int MLFQ_cnt)
 	free(linked_Q);
 }
 
+//pop mlfq's queue by param of Q pointer
 int MLFQ_pop(PROC_QUEUE* Q_pointer, PROCESS pc[], int q_index, int time, int** arr, int MLFQ_cnt) {
 	int i;
 	int j;
@@ -394,22 +372,16 @@ int MLFQ_pop(PROC_QUEUE* Q_pointer, PROCESS pc[], int q_index, int time, int** a
 	int _runT = Q_pointer[q_index].Q[head].runT;
 	int pid = Q_pointer[q_index].Q[head].pid;
 
-	// exception for queue empty
 	if (head == tail) {
-		printf("ERROR :: Queue is empty\n"); return -1;
+		printf("ERROR :: Queue is empty\n"); return -1; //error exception for empty queue
 	}
 
-	if (_runT < Q_pointer[q_index].TQ - 1) { // Stay in current queue
+	if (_runT < Q_pointer[q_index].TQ - 1) { //stay in current queue
 		Q_pointer[q_index].Q[head].serviceT--;
-		if (pc[pid].rec == 0) {
-			pc[pid].first_runT = time;
-			pc[pid].rec = 1;
-		}
-		if (Q_pointer[q_index].Q[head].serviceT == 0) { // Process end
+		if (Q_pointer[q_index].Q[head].serviceT == 0) { //if process end
 			Q_pointer[q_index].head = (head + 1) % MAX_Q;
 			processRefresh(Q_pointer[q_index].Q, head);
 			arr[pid][time] = 1;
-			pc[pid].final_endT = time + 1;
 			return 0;
 		}
 		else {
@@ -418,25 +390,20 @@ int MLFQ_pop(PROC_QUEUE* Q_pointer, PROCESS pc[], int q_index, int time, int** a
 			return 1;
 		}
 	}
-	else { // Move to lower priority queue
+	else { //move to lower priority of queue
 		Q_pointer[q_index].Q[head].serviceT--;
-		if (pc[pid].rec == 0) {
-			pc[pid].first_runT = time;
-			pc[pid].rec = 1;
-		}
-		if (Q_pointer[q_index].Q[head].serviceT == 0) { // Process end
+		if (Q_pointer[q_index].Q[head].serviceT == 0) { //if process end
 			Q_pointer[q_index].head = (head + 1) % MAX_Q;
 			processRefresh(Q_pointer[q_index].Q, head);
 			arr[pid][time] = 1;
-			pc[pid].final_endT = time + 1;
 			return 0;
 		}
 		else {
-			for (i = 0; i < MLFQ_cnt; i++) p_cnt += getQueueSize(&Q_pointer[i]); // Get total number of process in linked_Q
+			for (i = 0; i < MLFQ_cnt; i++) p_cnt += getQueueSize(&Q_pointer[i]); //get count of process in linked_Q
 
-			if (p_cnt == 1) { // If only one process exist in linked queue, stay in current queue
+			if (p_cnt == 1) { //if only one process exist in linked Q -> stay in current queue
 				for (j = 0; j < process_cnt; j++) {
-					if (pc[j].arriveT == time + 1) { // If there's incoming process on next time insert incoming process first
+					if (pc[j].arriveT == time + 1) { // If there is new process on next time -> insert new process first
 						flag = 1;
 						insertQueue(pc[j], &Q_pointer[0]);
 						pc[j].state = RUN;
@@ -456,19 +423,19 @@ int MLFQ_pop(PROC_QUEUE* Q_pointer, PROCESS pc[], int q_index, int time, int** a
 					arr[pid][time] = 1;
 					return 0;
 				}
-				else { // Retain the process at the same queue
+				else { //maintain process at same Q
 					arr[pid][time] = 1;
 					return 0;
 				}
 			}
-			if (q_index == MLFQ_cnt - 1) { // Exception for lowest queue
+			if (q_index == MLFQ_cnt - 1) { //exception for lowest priority queue
 				for (j = 0; j < process_cnt; j++) {
-					if (pc[j].arriveT == time + 1) { // If there's incoming process on next time insert incoming process first
+					if (pc[j].arriveT == time + 1) { //if there is new process on next time -> insert new process first
 						insertQueue(pc[j], &Q_pointer[0]);
 						pc[j].state = RUN;
 					}
 				}
-				insertQueue(Q_pointer[q_index].Q[head], &Q_pointer[q_index]); // Round robin
+				insertQueue(Q_pointer[q_index].Q[head], &Q_pointer[q_index]); //do RR sched
 			}
 			else {
 				insertQueue(Q_pointer[q_index].Q[head], &Q_pointer[q_index + 1]);
@@ -489,36 +456,30 @@ void STRIDE(PROCESS pc[]) {
 	int index = 0;
 	int totalTickets;
 	int schTarget = 0;
-	int* schCandidate = (int*)malloc(sizeof(int) * process_cnt);
+	int* schCandidate = (int*)malloc(sizeof(int) * process_cnt); //set sched candidate by each time
 
-	for (i = 0; i < process_cnt; i++) {
-		schCandidate[i] = -1;
-	}
+	for (i = 0; i < process_cnt; i++) schCandidate[i] = -1;
 
+	//create result array
 	int** arr = (int**)malloc(sizeof(int*) * height);
-	for (i = 0; i < height; i++) {
-		arr[i] = (int*)malloc(sizeof(int) * width);
-	}
-	for (i = 0; i < height; i++) for (j = 0; j < width; j++) arr[i][j] = 0;
+	for (i = 0; i < height; i++) arr[i] = (int*)malloc(sizeof(int) * width);
 
-	for (i = 0; i < process_cnt; i++) // Initiate process info before simulation
-	{
+	for (i = 0; i < height; i++) for (j = 0; j < width; j++) arr[i][j] = 0; //init array
+
+	//init process before simulation
+	for (i = 0; i < process_cnt; i++) {
 		pc[i].state = READY;
 		pc[i].runT = 0;
 		pc[i].runStride = 0;
-		pc[i].first_runT = 0;
-		pc[i].final_endT = 0;
 	}
 
 	totalTickets = calcTotalTickets(pc);
-
-	//set process stride by service time
 	printf("\nEach process' stride -> ");
-	for (i = 0; i < process_cnt; i++) {
+
+	for (i = 0; i < process_cnt; i++) { //set process stride by service time
 		pc[i].stride = totalTickets / pc[i].serviceT;
 		printf("[%c: %d] ", pc[i].name, pc[i].stride);
-	}
-	printf("\n");
+	} printf("\n");
 
 	while (1) {
 		index = 0;
@@ -530,25 +491,20 @@ void STRIDE(PROCESS pc[]) {
 		schTarget = getPidSmallStride(pc, schCandidate, index);
 
 		if (schTarget >= 0) {
-			if (pc[schTarget].runT <= pc[schTarget].serviceT) {
+			if (pc[schTarget].runT <= pc[schTarget].serviceT) { //sched if serviceT remain
 				arr[schTarget][time] = 1;
 				pc[schTarget].runT++;
 				pc[schTarget].runStride += pc[schTarget].stride;
 			}
-			else {
-				pc[schTarget].final_endT = time + 1;
-				delCand(schCandidate, schTarget);
-			}
+			else delCand(schCandidate, schTarget);
 		}
-
 		time++;
-
 		if (time == width) break;
 	}
-
 	draw(arr, pc);
 }
 
+//delete candidate in array
 void delCand(int* cand, int val) {
 	int i, tmp;
 	for (i = 0; i < process_cnt; i++) {
@@ -558,30 +514,27 @@ void delCand(int* cand, int val) {
 			cand[i + 1] = tmp;
 		}
 	} cand[i + 1] = -1;
-	return;
 }
 
+//calculation by each service times' LCM
 int calcTotalTickets(PROCESS pc[]) {
 	int i;
 	if (process_cnt > 1) {
 		int l = getLCM(pc[0].serviceT, pc[1].serviceT);
-		for (i = 2; i < process_cnt; i++) {
-			l = getLCM(l, pc[i].serviceT);
-		}
+		for (i = 2; i < process_cnt; i++) l = getLCM(l, pc[i].serviceT);
 		return l;
 	}
 	else return pc[0].serviceT;
 }
 
+//get LCM after get GCD
 int getGCD(int n, int m) {
 	if (m == 0) return n;
 	else return getGCD(m, n % m);
 }
+int getLCM(int n, int m) { return n * m / getGCD(n, m); }
 
-int getLCM(int n, int m) {
-	return n * m / getGCD(n, m);
-}
-
+//get process' pid if it's stride is smallest
 int getPidSmallStride(PROCESS pc[], int schC[], int index) {
 	int i;
 	int value = pc[schC[0]].runStride;
@@ -591,6 +544,5 @@ int getPidSmallStride(PROCESS pc[], int schC[], int index) {
 			value = pc[schC[i]].runStride;
 			pid = pc[schC[i]].pid;
 		}
-	}
-	return pid;
+	} return pid;
 }

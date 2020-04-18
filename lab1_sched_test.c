@@ -27,7 +27,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
-#include "lab1_sched_types.h"
+#include "./include/lab1_sched_types.h"
 
 int main(int argc, char* argv[]) {
 	PROCESS pc[MAX_PC];
@@ -38,22 +38,16 @@ int main(int argc, char* argv[]) {
 	printf("\n¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á\n");
 
 	setProcess(pc);
-
 	printf("\n------------------[ FIFO ]------------------\n");
 	FIFO(pc);
-
 	printf("\n-----------[ Round Robin - TQ 1]------------\n");
 	RR(pc, 1);
-
 	printf("\n-----------[ Round Robin - TQ 4]------------\n");
 	RR(pc, 4);
-
 	printf("\n---------------[ MLFQ - Q 1]----------------\n");
 	MLFQ(pc, 1);
-
 	printf("\n----------[ MLFQ - Q 4 - TQ 2^i ]-----------\n");
 	MLFQ(pc, 4);
-
 	printf("\n-------[ STRIDE - Set ticket by SVT ]-------\n");
 	STRIDE(pc);
 
