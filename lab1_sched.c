@@ -9,26 +9,23 @@
 *       - Must contains scheduler algorithm function's definition.
 *
 */
-///////Linux header//////////
-// 리눅스 환경일 때 주석 풀면됨
-// #include <aio.h>
-// #include <unistd.h>
-// #include <pthread.h>
-// #include <asm/unistd.h>
-// #include <sys/time.h>
-/////////////////////////////
+#include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <time.h>
+#include <sys/time.h>
 #include <string.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
+#include <pthread.h>
+#include <asm/unistd.h>
 #include <math.h>
-#include "./include/lab1_sched_types.h"
+#include "lab1_sched_types.h"
 
 int process_cnt;
 

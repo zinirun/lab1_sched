@@ -1,8 +1,8 @@
 #
 #	DKU Operating System Lab
 #	    Lab1 (Scheduler Algorithm Simulator)
-#	    Student id : 
-#	    Student name : 
+#	    Student id : 32164959, 32162436
+#	    Student name : Heo Jeon Jin, Shin Chang Woo
 #
 #   Makfeile :
 #       - Makefile for lab1 compilation.
