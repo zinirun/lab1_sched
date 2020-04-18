@@ -28,11 +28,11 @@
 
 int main(int argc, char* argv[]) {
 	PROCESS pc[MAX_PC];
-	printf("\n¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á");
-	printf("\n¡á                2020                ¡á");
-	printf("\n¡á DKU OS LAB 1 - SCHEDULER SIMULATOR ¡á");
-	printf("\n¡á             BY HJJ/SCW             ¡á");
-	printf("\n¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á¡á\n");
+	printf("\n----------------------------------------");
+	printf("\n--                2020                --");
+	printf("\n-- DKU OS LAB 1 - SCHEDULER SIMULATOR --");
+	printf("\n--             BY HJJ/SCW             --");
+	printf("\n----------------------------------------\n");
 
 	setProcess(pc);
 	printf("\n------------------[ FIFO ]------------------\n");

@@ -30,7 +30,7 @@ int process_cnt;
 
 //Set process by user (arrival time, service time)
 void setProcess(PROCESS* pointer) {
-	printf("\n¢º How many process (1 to 50) -> ");
+	printf("\n- How many process (1 to 50) -> ");
 	scanf("%d", &process_cnt);
 
 	PROCESS* pc = (PROCESS*)malloc(sizeof(PROCESS) * process_cnt);
@@ -40,8 +40,8 @@ void setProcess(PROCESS* pointer) {
 		pc[i].pid = i;
 		pc[i].state = READY;
 		printf("\n\n*--- Process %c ---*\n", pc[i].name);
-		printf("¢¹ Arrival time -> "); scanf("%d", &pc[i].arriveT);
-		printf("¢¹ Service time -> "); scanf("%d", &pc[i].serviceT);
+		printf("- Arrival time -> "); scanf("%d", &pc[i].arriveT);
+		printf("- Service time -> "); scanf("%d", &pc[i].serviceT);
 		*(pointer + i) = pc[i];
 	}
 
@@ -472,6 +472,7 @@ void STRIDE(PROCESS pc[]) {
 	for (i = 0; i < process_cnt; i++) {
 		pc[i].state = READY;
 		pc[i].runT = 0;
+		pc[i].stride = 0;
 		pc[i].runStride = 0;
 	}
 
