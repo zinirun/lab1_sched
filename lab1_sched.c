@@ -116,8 +116,8 @@ void draw(int** arr, PROCESS pc[]) {
 	for (i = 0; i < height; i++) {
 		printf("%c ", pc[i].name);
 		for (int j = 0; j < width; j++) {
-			if (arr[i][j] == 0) printf("¡à");
-			else printf("¡á");
+			if (arr[i][j] == 0) printf("â–¡ ");
+			else printf("â–  ");
 		}
 		printf("\n");
 	}
