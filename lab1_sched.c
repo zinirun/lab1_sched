@@ -98,7 +98,7 @@ int getQueueSize(PROC_QUEUE* queue) {
 }
 
 //Flush process by index
-void processRefresh(PROCESS* proc, int index) {
+void processEnd(PROCESS* proc, int index) {
 	proc[index].pid = -1;
 	proc[index].arriveT = 0;
 	proc[index].serviceT = 0;
@@ -159,7 +159,7 @@ void FIFO(PROCESS pc[]) {
 	Q_single.Q = queue;
 
 	//Protect error of memory leaked
-	for (i = 0; i < MAX_Q; i++) processRefresh(queue, i);
+	for (i = 0; i < MAX_Q; i++) processEnd(queue, i);
 
 	//Init result array 
 	for (i = 0; i < height; i++) for (j = 0; j < width; j++) arr[i][j] = 0;
@@ -196,7 +196,7 @@ void FIFO_pop(PROC_QUEUE* SQ_pointer, PROCESS* pc, int time, int** arr) {
 	queue_pointer[head].serviceT--; //reduce service time which is running
 	if (queue_pointer[head].serviceT == 0) { //Process end
 		arr[pid][time] = 1;
-		processRefresh(queue_pointer, head);
+		processEnd(queue_pointer, head);
 		SQ_pointer->head = (head + 1) % MAX_Q;
 	}
 	arr[pid][time] = 1;
@@ -227,7 +227,7 @@ void RR(PROCESS pc[], int tq)
 	Q_single.Q = queue;
 	Q_single.TQ = tq;
 
-	for (i = 0; i < MAX_Q; i++) processRefresh(queue, i);
+	for (i = 0; i < MAX_Q; i++) processEnd(queue, i);
 
 	//Doing simulation
 	for (time = 0; time < getSumST(pc); time++) {
@@ -264,7 +264,7 @@ void RR_pop(PROC_QUEUE* SQ_pointer, PROCESS pc[], int time, int** arr, int* flag
 
 	if (queue_pointer[head].serviceT == 0) { //process end
 		arr[pid][time] = 1;
-		processRefresh(queue_pointer, head);
+		processEnd(queue_pointer, head);
 		SQ_pointer->head = (head + 1) % MAX_Q;
 	}
 	else {
@@ -280,7 +280,7 @@ void RR_pop(PROC_QUEUE* SQ_pointer, PROCESS pc[], int time, int** arr, int* flag
 		}
 		insertQueue(queue_pointer[head], SQ_pointer);
 		arr[pid][time] = 1;
-		processRefresh(queue_pointer, head);
+		processEnd(queue_pointer, head);
 		SQ_pointer->head = (head + 1) % MAX_Q;
 	}
 }
@@ -320,7 +320,7 @@ void MLFQ(PROCESS pc[], int MLFQ_cnt) {
 		}
 		linked_Q[q_index].TQ = pow_val;
 		linked_Q[q_index].Q = (PROCESS*)malloc(sizeof(PROCESS) * MAX_Q);
-		for (i = 0; i < MAX_Q; i++)	processRefresh(linked_Q[q_index].Q, i);
+		for (i = 0; i < MAX_Q; i++)	processEnd(linked_Q[q_index].Q, i);
 	}
 
 	//Doing simulation
@@ -382,7 +382,7 @@ int MLFQ_pop(PROC_QUEUE* Q_pointer, PROCESS pc[], int q_index, int time, int** a
 		Q_pointer[q_index].Q[head].serviceT--;
 		if (Q_pointer[q_index].Q[head].serviceT == 0) { //if process end
 			Q_pointer[q_index].head = (head + 1) % MAX_Q;
-			processRefresh(Q_pointer[q_index].Q, head);
+			processEnd(Q_pointer[q_index].Q, head);
 			arr[pid][time] = 1;
 			return 0;
 		}
@@ -396,7 +396,7 @@ int MLFQ_pop(PROC_QUEUE* Q_pointer, PROCESS pc[], int q_index, int time, int** a
 		Q_pointer[q_index].Q[head].serviceT--;
 		if (Q_pointer[q_index].Q[head].serviceT == 0) { //if process end
 			Q_pointer[q_index].head = (head + 1) % MAX_Q;
-			processRefresh(Q_pointer[q_index].Q, head);
+			processEnd(Q_pointer[q_index].Q, head);
 			arr[pid][time] = 1;
 			return 0;
 		}
@@ -415,13 +415,13 @@ int MLFQ_pop(PROC_QUEUE* Q_pointer, PROCESS pc[], int q_index, int time, int** a
 					if (q_index == MLFQ_cnt - 1) {
 						arr[pid][time] = 1;
 						insertQueue(Q_pointer[q_index].Q[head], &Q_pointer[q_index]);
-						processRefresh(Q_pointer[q_index].Q, head);
+						processEnd(Q_pointer[q_index].Q, head);
 						Q_pointer[q_index].head = (head + 1) % MAX_Q;
 						return 0;
 					}
 					insertQueue(Q_pointer[q_index].Q[head], &Q_pointer[q_index + 1]);
 					Q_pointer[q_index].head = (head + 1) % MAX_Q;
-					processRefresh(Q_pointer[q_index].Q, head);
+					processEnd(Q_pointer[q_index].Q, head);
 					arr[pid][time] = 1;
 					return 0;
 				}
@@ -443,7 +443,7 @@ int MLFQ_pop(PROC_QUEUE* Q_pointer, PROCESS pc[], int q_index, int time, int** a
 				insertQueue(Q_pointer[q_index].Q[head], &Q_pointer[q_index + 1]);
 			}
 			Q_pointer[q_index].head = (head + 1) % MAX_Q;
-			processRefresh(Q_pointer[q_index].Q, head);
+			processEnd(Q_pointer[q_index].Q, head);
 			arr[pid][time] = 1;
 			return 0;
 		}

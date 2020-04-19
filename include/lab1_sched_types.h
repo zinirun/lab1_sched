@@ -42,7 +42,7 @@ typedef struct ProcQueue {
 void setProcess(PROCESS* pointer);
 int getSumST(PROCESS pc[]);
 int getQueueSize(PROC_QUEUE* queue);
-void processRefresh(PROCESS* proc, int index);
+void processEnd(PROCESS* proc, int index);
 void draw(int** arr, PROCESS pc[]);
 void insertQueue(PROCESS proc, PROC_QUEUE* queue);
 int calcTotalTickets(PROCESS pc[]);
