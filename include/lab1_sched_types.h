@@ -15,17 +15,17 @@
 #define _LAB1_HEADER_H
 
 
-#define RUN 1 // Flag for control process
+#define RUN 1 // state flag of process
 #define READY 0
-#define MAX_Q 10 // Each queue size
-#define MAX_PC 50 // Max number of process
+#define MAX_Q 10 // queue size
+#define MAX_PC 50 // max number of process
 
 typedef struct Process {
 	char name;
 	int pid;
-	int arriveT; // Arrival time
-	int serviceT; // Service time
-	int runT; // Accumulated time
+	int arriveT;
+	int serviceT;
+	int runT;
 	int stride;
 	int runStride;
 	int state;
@@ -34,7 +34,7 @@ typedef struct Process {
 typedef struct ProcQueue {
 	int head;
 	int tail;
-	int TQ; // Time quantum
+	int TQ;
 	PROCESS* Q;
 } PROC_QUEUE;
 
@@ -42,7 +42,7 @@ typedef struct ProcQueue {
 void setProcess(PROCESS* pointer);
 int getSumST(PROCESS pc[]);
 int getQueueSize(PROC_QUEUE* queue);
-void processEnd(PROCESS* proc, int index);
+void processRefresh(PROCESS* proc, int index);
 void draw(int** arr, PROCESS pc[]);
 void insertQueue(PROCESS proc, PROC_QUEUE* queue);
 int calcTotalTickets(PROCESS pc[]);
