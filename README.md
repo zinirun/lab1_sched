@@ -1,5 +1,5 @@
-# lab1_sched
-Scheduler Simulator (FIFO, RR, MLFQ, STRIDE)
+# Scheduler Simulator
+(FIFO, RR, MLFQ, STRIDE)
 
 운영체제 강의 과제에서 구현한 스케줄러 시뮬레이터이다. C로 작성되었으며 FIFO(FCFS), RR, MLFQ, Stride에 대한 스케줄링 알고리즘을 눈으로 볼 수 있다.
 
